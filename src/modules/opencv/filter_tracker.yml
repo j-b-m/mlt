@@ -28,6 +28,16 @@ parameters:
     mutable: no
     readonly: yes
 
+ - identifier: analyse
+    title: Analyse Video
+    type: integer
+    description: >
+      If set to 1, this will create an animated rect property tracker_data to remember the movements of the object
+    readonly: yes
+    required: no
+    default: 0
+    mutable: no
+
   - identifier: rect
     title: Target Rect
     type: string
