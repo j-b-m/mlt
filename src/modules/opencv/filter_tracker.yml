@@ -1,0 +1,65 @@
+schema_version: 0.1
+type: filter
+identifier: tracker
+title: OpenCV Motion Tracker
+copyright: Jean-Baptiste Mardelle
+creator: Jean-Baptiste Mardelle <jb@kdenlive.org>
+version: 1
+license: GPL
+language: en
+url:
+tags:
+  - Video
+description: Track and follow an object in the video
+notes: >
+  If used in a non-linear workflow, this filter works best with two passes.
+  The first pass performs analysis and stores the result in a property.
+  The second pass applies the results to the image.
+
+  To use with melt, use 'melt ... -consumer xml:output.mlt all=1' for the
+  first pass. For the second pass, use output.mlt as the input.
+
+parameters:
+  - identifier: tracker_data
+    title: Analysis Results
+    type: string
+    description: >
+      Set after analysis. This is an animated rect following object designated with initial rect property.
+    mutable: no
+    readonly: yes
+
+  - identifier: rect
+    title: Target Rect
+    type: string
+    description: >
+      The rectangle defining the object to be followed (from the 1st frame of the filter).
+    required: no
+    readonly: no
+    mutable: no
+    default: 0 0 50 50
+
+  - identifier: show_rect
+    title: Show Rectangle
+    type: integer
+    description: >
+      Decide if we want to display the rect around followed object during playback
+      0 means no rectangle displayed. > 0 determines rectangle border width.
+      < 0 means a filled rectangle
+    readonly: no
+    required: no
+    minimum: -1
+    maximum: 100
+    default: 1
+    mutable: no
+
+  - identifier: rect_color
+    title: Rectangle Color
+    type: color
+    description: >
+      The color used to paint rectangle around target object.
+    readonly: no
+    required: no
+    default: 0xffffff
+    mutable: yes
+
+

@@ -1,0 +1,38 @@
+#!/bin/sh
+
+if [ "$help" = "1" ]
+then
+	cat << EOF
+Requires OpenCV >= 3.1.0
+
+
+EOF
+
+else
+	targetos=$(uname -s)
+	case $targetos in
+	MINGW32*)
+		export LIBSUF=.dll
+		;;
+	Darwin)
+		export LIBSUF=.dylib
+		;;
+	Linux|FreeBSD|NetBSD)
+		export LIBSUF=.so
+		;;
+	*)
+		;;
+	esac
+
+	pkg-config --atleast-version=3.1.0 'opencv'
+	if [ $? -eq 0 ]
+	then
+		echo "- OpenCV >= 3.1.0 found, enabling OpenCV modules"
+	else
+		echo "- OpenCV >= 3.1.0 NOT found, disabling OpenCV modules"
+		touch ../disable-opencv
+                exit 0
+	fi
+
+	exit 0
+fi
