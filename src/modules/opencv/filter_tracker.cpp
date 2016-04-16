@@ -175,8 +175,8 @@ static mlt_frame filter_process( mlt_filter filter, mlt_frame frame )
 static void filter_close( mlt_filter filter )
 {
         private_data* data = (private_data*)filter->child;
-        free ( delete data->tracker );
-        free ( delete data );
+        free ( data->tracker );
+        free ( data );
         filter->child = NULL;
 	filter->close = NULL;
 	filter->parent.close = NULL;
