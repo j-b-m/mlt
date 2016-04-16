@@ -67,6 +67,32 @@ parameters:
     default: 0xffffffff
     mutable: yes
 
+  - identifier: blur
+    title: Blur
+    type: integer
+    description: >
+      Decide if we want to blur selected object
+      0 means no blur, > 0 means blur intensity.
+    readonly: no
+    required: no
+    minimum: 0
+    maximum: 100
+    default: 0
+    mutable: no
+
+  - identifier: blur_type
+    title: Blur Type
+    type: integer
+    description: >
+      Decide which blur method is used.
+      0 for median blur, 1 for gaussian blur.
+    readonly: no
+    required: no
+    minimum: 0
+    maximum: 100
+    default: 0
+    mutable: no
+
   - identifier: algo
     title: Tracker Algorithm
     type: string

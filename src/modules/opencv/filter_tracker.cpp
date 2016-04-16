@@ -88,8 +88,7 @@ static void analyse( mlt_filter filter, cv::Mat cvFrame, private_data* data, int
         rect.h = data->boundingBox.height;
         rect.o = 0;
         mlt_properties_anim_set_rect(filter_properties, "_results", rect, position, length, mlt_keyframe_linear);
-
-        if ( position + 1 == length )
+        if ( position == length )
         {
                 //Analysis finished, store results
                 mlt_properties_set(filter_properties, "results", mlt_properties_get(filter_properties, "_results" ) );
@@ -111,8 +110,9 @@ static int filter_get_image( mlt_frame frame, uint8_t **image, mlt_image_format 
 
         mlt_service_lock( MLT_FILTER_SERVICE(filter) );
         int shape_width = mlt_properties_get_int( filter_properties, "shape_width" );
+        int blur = mlt_properties_get_int( filter_properties, "blur" );
         cv::Mat cvFrame;
-        if (shape_width == 0) {
+        if ( shape_width == 0 && blur == 0 ) {
                 error = mlt_frame_get_image( frame, image, format, width, height, 1 );
         }
         else
@@ -134,8 +134,30 @@ static int filter_get_image( mlt_frame frame, uint8_t **image, mlt_image_format 
 		analyse( filter, cvFrame, data, *width, *height, position, length );
 	}
 	
+	if ( blur > 0 )
+        {
+                switch ( mlt_properties_get_int( filter_properties, "blur_type" ) )
+                {
+                        case 1:
+                                // Gaussian Blur
+                                cv::GaussianBlur(cvFrame(data->boundingBox), cvFrame(data->boundingBox), cv::Size(0, 0), blur);
+                                break;
+                        case 0:
+                        default:
+                                // Median Blur
+                                ++blur;
+                                if (blur % 2 == 0)
+                                {
+                                        // median blur param must be odd and, minimum 3
+                                        ++blur;
+                                }
+                                cv::medianBlur( cvFrame( data->boundingBox ), cvFrame( data->boundingBox ), blur );
+                                break;
+                }
+        }
+
 	// Paint overlay shape
-	if (shape_width != 0) {
+	if ( shape_width != 0 ) {
                 // Get the OpenCV image
                 mlt_color shape_color = mlt_properties_get_color( filter_properties, "shape_color" );
                 switch ( mlt_properties_get_int( filter_properties, "shape" ) ) {
