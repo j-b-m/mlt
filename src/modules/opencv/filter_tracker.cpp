@@ -1,6 +1,7 @@
 /*
- * filter_tracker.cpp -- animate color to the audio
- * Copyright (C) 2015 Meltytech, LLC
+ * filter_tracker.cpp -- Motion tracker
+ * Copyright (C) 2016 Jean-Baptiste Mardelle
+ * Copyright (C) 2016 Meltytech, LLC
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,9 +27,40 @@ typedef struct
 {
         cv::Ptr<cv::Tracker> tracker;
         cv::Rect2d boundingBox;
+        char * algo;
+        mlt_rect startRect;
         bool initialized;
 } private_data;
 
+
+static void property_changed( mlt_service owner, mlt_filter filter, char *name )
+{
+	private_data* pdata = (private_data*)filter->child;
+        if ( !pdata->initialized )
+        {
+                return;
+        }
+	if ( !strcmp( name, "rect" ) )
+        {
+                mlt_rect rect = mlt_properties_get_rect(MLT_FILTER_PROPERTIES( filter ), "rect");
+                if ( rect.x != pdata->startRect.x || rect.y != pdata->startRect.y || rect.w != pdata->startRect.w || rect.h != pdata->startRect.h )
+                {
+                        pdata->initialized = false;
+                }
+        }
+        else if ( !strcmp( name, "algo" ) )
+        {
+                char *algo = mlt_properties_get(MLT_FILTER_PROPERTIES( filter ), "algo");
+                if ( strcmp( algo, pdata->algo ) )
+                {
+                        pdata->initialized = false;
+                }
+        }
+        else if ( !strcmp( name, "_reset" ) )
+	{
+                mlt_properties_set(MLT_FILTER_PROPERTIES( filter ), "results", (char*) NULL );
+        }
+}
 
 static void apply( mlt_filter filter, private_data* data, int width, int height, int position, int length )
 {
@@ -47,30 +79,30 @@ static void analyse( mlt_filter filter, cv::Mat cvFrame, private_data* data, int
 
         // Create tracker and initialize it
         if (!data->initialized) {
+
                 // Build tracker
-                if( data->tracker == NULL ) {
-                        const char *algo = mlt_properties_get( filter_properties, "algo" );
-                        if ( algo == NULL || strcmp(algo, "" ) ) {
-                                data->tracker = cv::Tracker::create("KCF");
-                        } else {
-                                data->tracker = cv::Tracker::create(algo);
-                        }
+                data->algo = mlt_properties_get( filter_properties, "algo" );
+                if ( data->algo == NULL || !strcmp(data->algo, "" ) ) {
+                        data->tracker = cv::Tracker::create("KCF");
+                } else {
+                        data->tracker = cv::Tracker::create(data->algo);
                 }
+
+                // Discard previous results
+                mlt_properties_set(filter_properties, "_results", (char*) NULL );
                 if( data->tracker == NULL ) {
                         fprintf(stderr, "Tracker initialized FAILED\n");
                 } else {
-                        if (data->boundingBox.width <1 || data->boundingBox.height <1) {
-                                mlt_rect rect = mlt_properties_get_rect(filter_properties, "rect");
-                                data->boundingBox.x = std::max(rect.x, 1.0);
-                                data->boundingBox.y= std::max(rect.y, 1.0);
-                                data->boundingBox.width = rect.w;
-                                data->boundingBox.height = rect.h;
-                                if (data->boundingBox.width <1) {
-                                        data->boundingBox.width = 50;
-                                }
-                                if (data->boundingBox.height <1) {
-                                        data->boundingBox.height = 50;
-                                }
+                        data->startRect = mlt_properties_get_rect(filter_properties, "rect");
+                        data->boundingBox.x = std::max(data->startRect.x, 1.0);
+                        data->boundingBox.y= std::max(data->startRect.y, 1.0);
+                        data->boundingBox.width = data->startRect.w;
+                        data->boundingBox.height = data->startRect.h;
+                        if (data->boundingBox.width <1) {
+                                data->boundingBox.width = 50;
+                        }
+                        if (data->boundingBox.height <1) {
+                                data->boundingBox.height = 50;
                         }
                         if (data->tracker->init( cvFrame, data->boundingBox )) {
                                 data->initialized = true;
@@ -217,7 +249,9 @@ mlt_filter filter_tracker_init( mlt_profile profile, mlt_service_type type, cons
 
 	if ( filter && data)
 	{
-                mlt_properties_set_int( MLT_FILTER_PROPERTIES( filter ), "shape_width", 1 );
+                mlt_properties properties = MLT_FILTER_PROPERTIES( filter );
+                mlt_properties_set_int( properties, "shape_width", 1 );
+                mlt_properties_set( properties, "algo", "KCF" );
                 data->initialized = false;
                 data->boundingBox.x = 0;
                 data->boundingBox.y= 0;
@@ -228,6 +262,8 @@ mlt_filter filter_tracker_init( mlt_profile profile, mlt_service_type type, cons
                 // Create a unique ID for storing data on the frame
 		filter->close = filter_close;
 		filter->process = filter_process;
+
+                mlt_events_listen( properties, filter, "property-changed", (mlt_listener)property_changed );
 	}
 	else
 	{
@@ -238,10 +274,10 @@ mlt_filter filter_tracker_init( mlt_profile profile, mlt_service_type type, cons
 			mlt_filter_close( filter );
 		}
 
-		/*if( pdata )
+		if( data )
 		{
-			free( pdata );
-		}*/
+			free( data );
+		}
 
 		filter = NULL;
 	}

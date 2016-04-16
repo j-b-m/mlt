@@ -98,10 +98,10 @@ parameters:
     type: string
     description: >
       The algorithm used for tracking (OpenCV name) 
-      Check OpenCV doc for full algorithm list, most commons are KFC, MIL, BOOSTING, TLD
+      Check OpenCV doc for full algorithm list, most commons are KCF, MIL, BOOSTING, TLD
     readonly: no
     required: no
-    default: KFC
+    default: KCF
     mutable: no
 
   - identifier: results
