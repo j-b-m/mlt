@@ -20,24 +20,6 @@ notes: >
   first pass. For the second pass, use output.mlt as the input.
 
 parameters:
-  - identifier: tracker_data
-    title: Analysis Results
-    type: string
-    description: >
-      Set after analysis. This is an animated rect following object designated with initial rect property.
-    mutable: no
-    readonly: yes
-
- - identifier: analyse
-    title: Analyse Video
-    type: integer
-    description: >
-      If set to 1, this will create an animated rect property tracker_data to remember the movements of the object
-    readonly: yes
-    required: no
-    default: 0
-    mutable: no
-
   - identifier: rect
     title: Target Rect
     type: string
@@ -48,13 +30,25 @@ parameters:
     mutable: no
     default: 0 0 50 50
 
-  - identifier: show_rect
-    title: Show Rectangle
+  - identifier: shape
+    title: Shape
     type: integer
     description: >
-      Decide if we want to display the rect around followed object during playback
-      0 means no rectangle displayed. > 0 determines rectangle border width.
-      < 0 means a filled rectangle
+      The shape to be drawn around tracked object
+      0 for a rectangle, 1 for an ellipse, 2 for an arrow.
+    readonly: no
+    required: no
+    minimum: 0
+    maximum: 5
+    default: 0
+    mutable: no
+
+  - identifier: shape_width
+    title: Shape Width
+    type: integer
+    description: >
+      Decide if we want to display a shape around followed object during playback
+      0 means no display, -1 means a filled shape and > 0 determines the border width.
     readonly: no
     required: no
     minimum: -1
@@ -62,14 +56,32 @@ parameters:
     default: 1
     mutable: no
 
-  - identifier: rect_color
-    title: Rectangle Color
+  - identifier: shape_color
+    title: Shape Color
     type: color
     description: >
-      The color used to paint rectangle around target object.
+      The color used to paint the shape around target object.
     readonly: no
     required: no
-    default: 0xffffff
+    default: 0xffffffff
     mutable: yes
 
+  - identifier: algo
+    title: Tracker Algorithm
+    type: string
+    description: >
+      The algorithm used for tracking (OpenCV name) 
+      Check OpenCV doc for full algorithm list, most commons are KFC, MIL, BOOSTING, TLD
+    readonly: no
+    required: no
+    default: KFC
+    mutable: no
+
+  - identifier: results
+    title: Analysis Results
+    type: string
+    description: >
+      Set after analysis. This is an animated rect following object designated with initial rect property.
+    mutable: no
+    readonly: yes
 
