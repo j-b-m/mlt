@@ -130,6 +130,7 @@ static void analyze( mlt_filter filter, cv::Mat cvFrame, private_data* data, int
 			if (data->tracker->init( cvFrame, data->boundingBox )) {
 				data->initialized = true;
 				data->analyze = true;
+				data->last_position = -1;
 			}
 			// init anim property
 			mlt_properties_anim_get_int(filter_properties, "_results", 0, length);
@@ -319,7 +320,7 @@ mlt_filter filter_tracker_init( mlt_profile profile, mlt_service_type type, cons
 		data->boundingBox.width = 0;
 		data->boundingBox.height = 0;
 		data->analyze = false;
-		data->last_position = 0;
+		data->last_position = -1;
 		filter->child = data;
 
 		// Create a unique ID for storing data on the frame
