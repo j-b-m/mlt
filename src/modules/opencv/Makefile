@@ -3,6 +3,7 @@ CFLAGS += -I../..
 LDFLAGS += -L../../framework -lmlt
 
 include ../../../config.mak
+include config.mak
 
 TARGET = ../libmltopencv$(LIBSUF)
 
@@ -11,11 +12,8 @@ OBJS = factory.o
 CPPOBJS = filter_tracker.o
 
 CXXFLAGS += -Wno-deprecated $(CFLAGS)
-CXXFLAGS += $(shell pkg-config --cflags opencv)
 
 LDFLAGS += -L../../mlt++ -lmlt++
-LDFLAGS += $(shell pkg-config --libs opencv)
-
 
 SRCS := $(OBJS:.o=.c) $(CPPOBJS:.o=.cpp)
 

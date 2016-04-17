@@ -3,31 +3,20 @@
 if [ "$help" = "1" ]
 then
 	cat << EOF
-Requires OpenCV >= 3.1.0
+OpenCV options:
+
+  This module requires OpenCV.
+  The Tracker filter requires OpenCV >= 3.1.0.
 
 
 EOF
 
 else
-	targetos=$(uname -s)
-	case $targetos in
-	MINGW32*)
-		export LIBSUF=.dll
-		;;
-	Darwin)
-		export LIBSUF=.dylib
-		;;
-	Linux|FreeBSD|NetBSD)
-		export LIBSUF=.so
-		;;
-	*)
-		;;
-	esac
-
 	pkg-config --atleast-version=3.1.0 'opencv'
 	if [ $? -eq 0 ]
 	then
-		echo "- OpenCV >= 3.1.0 found, enabling OpenCV modules"
+		echo "CFLAGS += $(pkg-config --cflags opencv)" >> config.mak
+		echo "LDFLAGS += $(pkg-config --libs opencv)" >> config.mak
 	else
 		echo "- OpenCV >= 3.1.0 NOT found, disabling OpenCV modules"
 		touch ../disable-opencv
