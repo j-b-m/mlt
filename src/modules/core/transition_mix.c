@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #include <framework/mlt_transition.h>
@@ -57,7 +57,8 @@ static void mix_audio( double weight_start, double weight_end, int16_t *buffer_a
 			a = (double) buffer_a[ i * channels_a + j ];
 			b = (double) buffer_b[ i * channels_b + j ];
 			v = mix * b + (1.0 - mix) * a;
-			buffer_a[ i * channels_a + j ] = CLAMP( v, -32767.0, 32768.0 );
+			v = CLAMP( v, -32767.0, 32768.0 );
+			buffer_a[ i * channels_a + j ] = v;
 		}
 		mix += mix_step;
 	}

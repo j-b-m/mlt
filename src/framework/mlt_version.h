@@ -16,7 +16,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #ifndef MLT_VERSION_H
@@ -27,7 +27,7 @@
 #define STRINGIZE(s)            STRINGIZE2(s)
 
 #define LIBMLT_VERSION_MAJOR    6
-#define LIBMLT_VERSION_MINOR    1
+#define LIBMLT_VERSION_MINOR    3
 #define LIBMLT_VERSION_REVISION 0
 #define LIBMLT_VERSION_INT      ((LIBMLT_VERSION_MAJOR<<16)+(LIBMLT_VERSION_MINOR<<8)+LIBMLT_VERSION_REVISION)
 #define LIBMLT_VERSION          STRINGIZE(LIBMLT_VERSION_MAJOR.LIBMLT_VERSION_MINOR.LIBMLT_VERSION_REVISION)

@@ -1,6 +1,6 @@
 /*
  * filter_audiowaveform.cpp -- audio waveform visualization filter
- * Copyright (c) 2015 Meltytech, LLC
+ * Copyright (c) 2015-2016 Meltytech, LLC
  * Author: Brian Matherly <code@brianmatherly.com>
  *
  * This library is free software; you can redistribute it and/or
@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #include "common.h"
@@ -213,9 +213,9 @@ static int filter_get_image( mlt_frame frame, uint8_t **image, mlt_image_format 
 	// Draw the waveforms
 	if( !error ) {
 		QImage qimg( *width, *height, QImage::Format_ARGB32 );
-		copy_mlt_to_qimage_rgba( *image, &qimg );
+		convert_mlt_to_qimage_rgba( *image, &qimg, *width, *height );
 		draw_waveforms( filter, frame, &qimg, audio, channels, samples );
-		copy_qimage_to_mlt_rgba( &qimg, *image );
+		convert_qimage_to_mlt_rgba( &qimg, *image, *width, *height );
 	}
 
 	return error;
@@ -270,7 +270,7 @@ mlt_filter filter_audiowaveform_init( mlt_profile profile, mlt_service_type type
 	mlt_properties_set( filter_properties, "thickness", "0" );
 	mlt_properties_set( filter_properties, "show_channel", "0" );
 	mlt_properties_set( filter_properties, "angle", "0" );
-	mlt_properties_set( filter_properties, "rect", "0,0,100%,100%" );
+	mlt_properties_set( filter_properties, "rect", "0 0 100% 100%" );
 	mlt_properties_set( filter_properties, "fill", "0" );
 	mlt_properties_set( filter_properties, "gorient", "v" );
 

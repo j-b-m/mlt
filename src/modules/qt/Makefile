@@ -13,7 +13,9 @@ CPPOBJS = common.o \
 	filter_audiowaveform.o \
 	qimage_wrapper.o \
 	kdenlivetitle_wrapper.o \
-	producer_qtext.o
+	producer_qtext.o \
+	transition_qtblend.o \
+	filter_qtblend.o
 
 ifdef USE_QT_OPENGL
 	CPPOBJS += consumer_qglsl.o

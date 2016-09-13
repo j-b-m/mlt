@@ -14,11 +14,13 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 // TODO: destroy unreferenced producers (they are currently destroyed
 //       when the returned producer is closed).
+
+#include "common.h"
 
 #include <framework/mlt.h>
 #include <framework/mlt_log.h>
@@ -187,29 +189,29 @@ static void track_service( mlt_properties properties, void *service, mlt_destruc
 	mlt_properties_set_int( properties, "registered", ++ registered );
 }
 
-
 // Prepend the property value with the document root
 static inline void qualify_property( deserialise_context context, mlt_properties properties, const char *name )
 {
-	char *resource_orig = mlt_properties_get( properties, name );
+	const char *resource_orig = mlt_properties_get( properties, name );
 	char *resource = mlt_properties_get( properties, name );
 	if ( resource != NULL && resource[0] )
 	{
 		char *root = mlt_properties_get( context->producer_map, "root" );
 		int n = strlen( root ) + strlen( resource ) + 2;
+		size_t prefix_size = mlt_xml_prefix_size( properties, name, resource );
 
-		// Strip off WebVfx "plain:" prefix.
-		if ( !strncmp( resource_orig, "plain:", 6 ) )
-			resource += 6;
+		// Strip off prefix.
+		if ( prefix_size )
+			resource += prefix_size;
 
 		// Qualify file name properties	
 		if ( root != NULL && strcmp( root, "" ) )
 		{
 			char *full_resource = calloc( 1, n );
-			if ( resource[ 0 ] != '/' && strchr( resource, ':' ) == NULL )
+			if ( resource[0] != '/' && resource[0] != '\\' && !strchr( resource, ':' ) )
 			{
-				if ( !strncmp( resource_orig, "plain:", 6 ) )
-					strcat( full_resource, "plain:" );
+				if ( prefix_size )
+					strncat( full_resource, resource_orig, prefix_size );
 				strcat( full_resource, root );
 				strcat( full_resource, "/" );
 				strcat( full_resource, resource );
@@ -592,6 +594,7 @@ static void on_end_producer( deserialise_context context, const xmlChar *name )
 		qualify_property( context, properties, "luma.resource" );
 		qualify_property( context, properties, "composite.luma" );
 		qualify_property( context, properties, "producer.resource" );
+		qualify_property( context, properties, "argument" ); // timewarp producer
 
 		// Handle in/out properties separately
 		mlt_position in = -1;

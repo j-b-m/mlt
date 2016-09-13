@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
 #include <string.h>
@@ -30,6 +30,8 @@ extern mlt_producer producer_qimage_init( mlt_profile profile, mlt_service_type 
 extern mlt_producer producer_qtext_init( mlt_profile profile, mlt_service_type type, const char *id, char *arg );
 extern mlt_producer producer_kdenlivetitle_init( mlt_profile profile, mlt_service_type type, const char *id, char *arg );
 extern mlt_transition transition_vqm_init( mlt_profile profile, mlt_service_type type, const char *id, void *arg );
+extern mlt_transition transition_qtblend_init( mlt_profile profile, mlt_service_type type, const char *id, void *arg );
+extern mlt_filter filter_qtblend_init( mlt_profile profile, mlt_service_type type, const char *id, char *arg );
 
 #ifdef USE_FFTW
 extern mlt_filter filter_audiospectrum_init( mlt_profile profile, mlt_service_type type, const char *id, char *arg );
@@ -52,6 +54,10 @@ MLT_REPOSITORY
 	MLT_REGISTER( producer_type, "qimage", producer_qimage_init );
 	MLT_REGISTER( producer_type, "qtext", producer_qtext_init );
 	MLT_REGISTER( producer_type, "kdenlivetitle", producer_kdenlivetitle_init );
+	MLT_REGISTER( transition_type, "qtblend", transition_qtblend_init );
+	MLT_REGISTER( filter_type, "qtblend", filter_qtblend_init );
+	MLT_REGISTER_METADATA( transition_type, "qtblend", metadata, "transition_qtblend.yml" );
+	MLT_REGISTER_METADATA( filter_type, "qtblend", metadata, "filter_qtblend.yml" );
 #ifdef USE_FFTW
 	MLT_REGISTER( filter_type, "audiospectrum", filter_audiospectrum_init );
 	MLT_REGISTER( filter_type, "lightshow", filter_lightshow_init );

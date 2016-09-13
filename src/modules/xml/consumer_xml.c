@@ -14,8 +14,10 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+
+#include "common.h"
 
 #include <framework/mlt.h>
 #include <stdio.h>
@@ -208,31 +210,37 @@ static void serialise_properties( serialise_context context, mlt_properties prop
 				value = mlt_properties_get_time( properties, name, context->time_format );
 			else
 				value = mlt_properties_get_value( properties, i );
-			char *value_orig = value;
 			if ( value )
 			{
 				int rootlen = strlen( context->root );
+				const char *value_orig = value;
+				size_t prefix_size = mlt_xml_prefix_size( properties, name, value );
 
-				// Strip off WebVfx "plain:" prefix.
-				if ( !strncmp( value_orig, "plain:", 6 ) )
-					value += 6;
+				// Strip off prefix.
+				if ( prefix_size )
+					value += prefix_size;
+
+				// Ignore trailing slash on root.
+				if ( rootlen && ( context->root[rootlen - 1] == '/' || context->root[rootlen - 1] == '\\') )
+					--rootlen;
 
 				// convert absolute path to relative
-				if ( rootlen && !strncmp( value, context->root, rootlen ) && value[ rootlen ] == '/' )
+				if ( rootlen && !strncmp( value, context->root, rootlen ) &&
+					( value[rootlen] == '/' || value[rootlen] == '\\' ) )
 				{
-					if ( !strncmp( value_orig, "plain:", 6 ) )
+					if ( prefix_size )
 					{
 						char *s = calloc( 1, strlen( value_orig ) - rootlen + 1 );
-						strcat( s, "plain:" );
+						strncat( s, value_orig, prefix_size );
 						strcat( s, value + rootlen + 1 );
 						p = xmlNewTextChild( node, NULL, _x("property"), _x(s) );
 						free( s );
 					} else {
-						p = xmlNewTextChild( node, NULL, _x("property"), _x(value + rootlen + 1) );
+						p = xmlNewTextChild( node, NULL, _x("property"), _x(value_orig + rootlen + 1) );
 					}
 				}
 				else
-					p = xmlNewTextChild( node, NULL, _x("property"), _x(value) );
+					p = xmlNewTextChild( node, NULL, _x("property"), _x(value_orig) );
 				xmlNewProp( p, _x("name"), _x(name) );
 			}
 		}

@@ -1,6 +1,7 @@
 /**
  * MltProfile.cpp - MLT Wrapper
- * Copyright (C) 2008 Dan Dennedy <dan@dennedy.org>
+ * Copyright (C) 2008-2016 Meltytech, LLC
+ * Author: Dan Dennedy <dan@dennedy.org>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -14,7 +15,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #include "MltProfile.h"
@@ -51,6 +52,11 @@ Profile::~Profile( )
 	if ( instance )
 		mlt_profile_close( instance );
 	instance = NULL;
+}
+
+bool Profile::is_valid() const
+{
+	return instance != NULL;
 }
 
 mlt_profile Profile::get_profile( ) const

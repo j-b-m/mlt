@@ -14,7 +14,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #include <framework/mlt_producer.h>
@@ -595,7 +595,10 @@ static int producer_get_image( mlt_frame frame, uint8_t **buffer, mlt_image_form
 		// Clone the image
 		int image_size = mlt_image_format_size( self->format, self->width, self->height, NULL );
 		uint8_t *image_copy = mlt_pool_alloc( image_size );
-		memcpy( image_copy, self->image, image_size );
+		// We use height-1 because mlt_image_format_size() uses height + 1.
+		// XXX Remove -1 when mlt_image_format_size() is changed.
+		memcpy( image_copy, self->image,
+			mlt_image_format_size( self->format, self->width, self->height - 1, NULL ) );
 		// Now update properties so we free the copy after
 		mlt_frame_set_image( frame, image_copy, image_size, mlt_pool_release );
 		// We're going to pass the copy on

@@ -13,7 +13,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #ifndef COMMON_H
@@ -24,8 +24,8 @@
 class QImage;
 
 bool createQApplicationIfNeeded(mlt_service service);
-void copy_qimage_to_mlt_rgba( QImage* qImg, uint8_t* mImg );
-void copy_mlt_to_qimage_rgba( uint8_t* mImg, QImage* qImg );
+void convert_qimage_to_mlt_rgba( QImage* qImg, uint8_t* mImg, int width, int height );
+void convert_mlt_to_qimage_rgba( uint8_t* mImg, QImage* qImg, int width, int height );
 int create_image( mlt_frame frame, uint8_t **image, mlt_image_format *image_format, int *width, int *height, int writable );
 
 #endif // COMMON_H

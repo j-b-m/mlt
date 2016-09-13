@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #include <framework/mlt.h>
@@ -82,7 +82,6 @@ static void clip_property_changed( mlt_service owner, mlt_producer producer, cha
 static int producer_get_audio( mlt_frame frame, void** buffer, mlt_audio_format* format, int* frequency, int* channels, int* samples )
 {
 	mlt_producer producer = mlt_frame_pop_audio( frame );
-	mlt_properties producer_properties = MLT_PRODUCER_PROPERTIES( producer );
 	private_data* pdata = (private_data*)producer->child;
 
 	int error = mlt_frame_get_audio( frame, buffer, format, frequency, channels, samples );

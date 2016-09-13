@@ -1,6 +1,7 @@
 /**
  * MltProfile.h - MLT Wrapper
- * Copyright (C) 2008 Dan Dennedy <dan@dennedy.org>
+ * Copyright (C) 2008-2016 Meltytech, LLC
+ * Author: Dan Dennedy <dan@dennedy.org>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -14,13 +15,13 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #ifndef MLTPP_PROFILE_H
 #define MLTPP_PROFILE_H
 
-#include "config.h"
+#include "MltConfig.h"
 
 #ifdef SWIG
 #define MLTPP_DECLSPEC
@@ -44,6 +45,7 @@ namespace Mlt
 			Profile( mlt_profile profile );
 			~Profile();
 
+			bool is_valid( ) const;
 			mlt_profile get_profile( ) const;
 			char* description() const;
 			int frame_rate_num() const;

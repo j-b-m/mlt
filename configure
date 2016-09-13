@@ -1,6 +1,6 @@
 #!/bin/sh
 
-export version=6.1.0
+export version=6.3.0
 export soversion=6
 
 show_help()
@@ -90,6 +90,7 @@ build_config()
 		fi
 
 		echo "CFLAGS+=-Wall -DPIC \$(TARGETARCH) \$(TARGETCPU) \$(OPTIMISATIONS) \$(MMX_FLAGS) \$(SSE_FLAGS) \$(SSE2_FLAGS) \$(DEBUG_FLAGS) \$(LARGE_FILE)"
+		echo "CXXFLAGS+=-Wall -DPIC \$(TARGETARCH) \$(TARGETCPU) \$(OPTIMISATIONS) \$(MMX_FLAGS) \$(SSE_FLAGS) \$(SSE2_FLAGS) \$(DEBUG_FLAGS) \$(LARGE_FILE)"
 
 		case $targetos in
 		Darwin)
