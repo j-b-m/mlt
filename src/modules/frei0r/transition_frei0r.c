@@ -21,12 +21,12 @@
 #include "frei0r_helper.h"
 #include <string.h>
 
-static int is_opaque( uint8_t *image, int pixels, int bpp )
+static int is_opaque( uint8_t *image, int width, int height )
 {
-	++pixels;
+	int pixels = width * height + 1;
 	while ( --pixels ) {
-		if ( *image != 0xff ) return 0;
-		image += bpp;
+		if ( image[3] != 0xff ) return 0;
+		image += 4;
 	}
 	return 1;
 }
@@ -42,49 +42,28 @@ static int transition_get_image( mlt_frame a_frame, uint8_t **image, mlt_image_f
 	uint8_t *images[] = {NULL, NULL, NULL};
 	int error = 0;
 
-	// An optimization for cairoblend in normal (over) mode and opaque B frame.
-	if ( b_frame->convert_image
-		 && !strcmp( "frei0r.cairoblend", mlt_properties_get( properties, "mlt_service" ) )
-		 && ( !mlt_properties_get( properties, "0" ) || mlt_properties_get_double( properties, "0" ) == 1.0 )
-		 && ( !mlt_properties_get( properties, "1" ) || !strcmp( "normal", mlt_properties_get( properties, "1" ) ) ) )
-	{
-		// Get the B-frame in its original format.
-		*format = mlt_image_none;
-		error = mlt_frame_get_image( b_frame, image, format, width, height, writable );
-		if ( error ) return error;
-		uint8_t *b_alpha = mlt_frame_get_alpha( b_frame );
+	// Get the B-frame.
+	*format = mlt_image_rgb24a;
+	error = mlt_frame_get_image( b_frame, &images[1], format, width, height, 0 );
+	if ( error ) return error;
 
-		if ( b_alpha ) {
-			// Check if the alpha channel is entirely opaque.
-			if ( is_opaque( b_alpha, *width * *height, 1 ) )
-				return 0;
-		} else if ( *format == mlt_image_rgb24a ) {
-			// Check if the alpha channel is entirely opaque.
-			if ( is_opaque( *image + 3, *width * *height, 4 ) )
-				return 0;
-		} else {
-			// There is no alpha channel.
-			mlt_log_verbose( MLT_TRANSITION_SERVICE(transition), "no alpha channel\n" );
-			return 0;
-		}
-		// It is not opaque so convert it to rgba.
-		if ( b_frame->convert_image ) {
-			error = b_frame->convert_image( b_frame, image, format, mlt_image_rgb24a );
-			if ( error ) return error;
-		}
-		images[1] = *image;
+	// An optimization for cairoblend in normal (over) mode and opaque B frame.
+	if ( !strcmp( "frei0r.cairoblend", mlt_properties_get( properties, "mlt_service" ) )
+	     && ( !mlt_properties_get( properties, "0" ) || mlt_properties_get_double( properties, "0" ) == 1.0 )
+	     && ( !mlt_properties_get( properties, "1" ) || !strcmp( "normal", mlt_properties_get( properties, "1" ) ) )
+	    // Check if the alpha channel is entirely opaque.
+	    && is_opaque( images[1], *width, *height ) )
+	{
+		if (invert)
+			error = mlt_frame_get_image( a_frame, image, format, width, height, 0 );
+		else
+			*image = images[1];
 	}
 	else
 	{
-		// Optimization not available; need to get B frame image.
-		*format = mlt_image_rgb24a;
-		mlt_frame_get_image( b_frame, &images[1], format, width, height, 0 );
-	}
+		error = mlt_frame_get_image( a_frame, &images[0], format, width, height, 0 );
+		if ( error ) return error;
 
-	*format = mlt_image_rgb24a;
-	error = mlt_frame_get_image( a_frame, &images[0], format, width, height, 0 );
-	if ( !error )
-	{
 		double position = mlt_transition_get_position( transition, a_frame );
 		mlt_profile profile = mlt_service_profile( MLT_TRANSITION_SERVICE( transition ) );
 		double time = position / mlt_profile_fps( profile );
