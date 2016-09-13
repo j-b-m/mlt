@@ -11,7 +11,7 @@ url:
 tags:
   - Video
 description: Track and follow an object in the video.
-notes:
+notes: >
   If used in a non-linear workflow, this filter works best with two passes.
   First pass performs analysis and stores the result in a property.
   Parallel processing (real_time < -1 or > 1) is not supported for
