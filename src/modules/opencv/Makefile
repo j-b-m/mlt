@@ -9,7 +9,7 @@ TARGET = ../libmltopencv$(LIBSUF)
 
 OBJS = factory.o
 
-CPPOBJS = filter_tracker.o
+CPPOBJS = filter_opencv_tracker.o
 
 CXXFLAGS += -Wno-deprecated $(CFLAGS)
 

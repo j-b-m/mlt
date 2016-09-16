@@ -34,5 +34,5 @@ static mlt_properties metadata( mlt_service_type type, const char *id, void *dat
 MLT_REPOSITORY
 {
 	MLT_REGISTER( filter_type, "opencv.tracker", filter_tracker_init );
-	MLT_REGISTER_METADATA( filter_type, "opencv.tracker", metadata, "filter_tracker.yml" );
+	MLT_REGISTER_METADATA( filter_type, "opencv.tracker", metadata, "filter_opencv_tracker.yml" );
 }

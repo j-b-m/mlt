@@ -6,7 +6,7 @@ then
 OpenCV options:
 
   This module requires OpenCV.
-  The Tracker filter requires OpenCV >= 3.1.0 and the contrib modules.
+  The Tracker filter requires OpenCV >= 3.1.0 and the tracking contrib module.
 
 
 EOF
