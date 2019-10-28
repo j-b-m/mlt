@@ -273,9 +273,9 @@ int mlt_tractor_insert_track( mlt_tractor self, mlt_producer producer, int index
 				int a_track = mlt_transition_get_a_track( transition );
 				int b_track = mlt_transition_get_b_track( transition );
 
-				if ( a_track >= index || b_track >= index )
+				if ( a_track >= index - 1 || b_track >= index )
 				{
-					a_track = a_track >= index ? a_track + 1 : a_track;
+					a_track = a_track >= index - 1 ? a_track + 1 : a_track;
 					b_track = b_track >= index ? b_track + 1 : b_track;
 					mlt_transition_set_tracks( transition, a_track, b_track );
 				}
