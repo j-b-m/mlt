@@ -33,12 +33,6 @@ static int filter_get_image( mlt_frame frame, uint8_t **image, mlt_image_format 
 	mlt_filter filter = mlt_frame_pop_service( frame );
 	mlt_properties properties = MLT_FILTER_PROPERTIES( filter );
 
-	int error = mlt_frame_get_image( frame, image, format, width, height, 1 );
-	if ( error )
-	{
-		return error;
-	}
-
 	mlt_position position = mlt_filter_get_position( filter, frame );
 	mlt_position length = mlt_filter_get_length2( filter, frame );
 
@@ -50,6 +44,18 @@ static int filter_get_image( mlt_frame frame, uint8_t **image, mlt_image_format 
 	if ( invert )
 	{
 		do_strobe = !do_strobe;
+	}
+
+	if ( do_strobe == 1 )
+	{
+		// Do not cause an image conversion unless there is real work to do.
+		*format = mlt_image_rgb24a;
+	}
+
+	int error = mlt_frame_get_image( frame, image, format, width, height, 1 );
+	if ( error )
+	{
+		return error;
 	}
 
 	if ( do_strobe != 1 )
@@ -75,9 +81,12 @@ static int filter_get_image( mlt_frame frame, uint8_t **image, mlt_image_format 
 
 	if ( *format == mlt_image_rgb24a )
 	{
-		for ( size_t i=3; i<byteCount * 4; i+=4 )
+		uint8_t *p = *image + 3;
+		uint8_t *q = *image + (byteCount * 4) + 3;
+		while ( p != q )
 		{
-			image[i] = 0;
+			*p = 0;
+			p += 4;
 		}
 	}
 
