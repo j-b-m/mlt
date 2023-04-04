@@ -2571,6 +2571,16 @@ static int video_codec_init(producer_avformat self, int index, mlt_properties pr
         // Start with the muxer frame rate.
         AVRational frame_rate = stream->avg_frame_rate;
         double fps = av_q2d(frame_rate);
+        AVRational r_frame_rate = stream->r_frame_rate;
+        double r_fps = av_q2d(r_frame_rate);
+        double fps_from_time_base = (double) stream->time_base.den / stream->time_base.num;
+
+        if (abs(fps_from_time_base - r_fps) < abs(fps_from_time_base - fps))
+        {
+            // Seems like r_frame_rate is closer to stream time_base, use this
+            frame_rate = r_frame_rate;
+            fps = r_fps;
+        }
 
         // Verify and sanitize the muxer frame rate.
         if (isnan(fps) || isinf(fps) || fps == 0) {
