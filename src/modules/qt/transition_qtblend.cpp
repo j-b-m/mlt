@@ -90,6 +90,17 @@ static int get_image(mlt_frame a_frame,
         b_height = *height;
     }
 
+    int request_width = profile->width;
+    int request_height = profile->height;
+    double scalex = mlt_profile_scale_width(profile, *width);
+    double scaley = mlt_profile_scale_height(profile, *height);
+    if (scalex != 1.) {
+        request_width *= scalex;
+        b_height *= scalex;
+        b_width *= scalex;
+    }
+    request_height *= scaley;
+
     // Check transform
     if (mlt_properties_get(transition_properties, "rect")) {
         rect = mlt_properties_anim_get_rect(transition_properties, "rect", position, length);
@@ -101,20 +112,18 @@ static int get_image(mlt_frame a_frame,
             rect.h *= *height;
         } else {
             // Adjust to preview scaling
-            double scale = mlt_profile_scale_width(profile, *width);
-            if (scale != 1.0) {
-                rect.x *= scale;
-                rect.w *= scale;
+            if (scalex != 1.0) {
+                rect.x *= scalex;
+                rect.w *= scalex;
                 if (distort) {
-                    b_width *= scale;
+                    b_width *= scalex;
                 }
             }
-            scale = mlt_profile_scale_height(profile, *height);
-            if (scale != 1.0) {
-                rect.y *= scale;
-                rect.h *= scale;
+            if (scaley != 1.0) {
+                rect.y *= scaley;
+                rect.h *= scaley;
                 if (distort) {
-                    b_height *= scale;
+                    b_height *= scaley;
                 }
             }
         }
@@ -174,9 +183,6 @@ static int get_image(mlt_frame a_frame,
     }
 
     // Check if we have transparency
-    int request_width = profile->width;
-    int request_height = profile->height;
-
     bool imageFetched = false;
     if (!forceAlpha) {
         if (!hasAlpha || *format == mlt_image_rgba) {

@@ -57,8 +57,6 @@ static int filter_get_image(mlt_frame frame,
     int normalized_width = profile->width;
     int normalized_height = profile->height;
     double consumer_ar = mlt_profile_sar(profile);
-    *width = normalized_width;
-    *height = normalized_height;
 
     // Destination rect
     mlt_rect rect = {0,
@@ -82,18 +80,10 @@ static int filter_get_image(mlt_frame frame,
     double b_dar = b_ar * b_width / b_height;
     double opacity = 1.0;
     double transformScale = 1.;
-    double geometry_dar = *width * consumer_ar / *height;
-    if (!distort && (b_height < *height || b_width < *width)) {
-        // Source image is smaller than profile, request full frame
-        if (b_dar > geometry_dar) {
-            transformScale = b_dar / geometry_dar;
-        } else {
-            transformScale = geometry_dar / b_dar;
-        }
-        b_width = *width;
-        b_height = *height;
-    }
+    double geometry_dar = normalized_width * consumer_ar / normalized_height;
 
+    // If the _qtblend_scaled property is true, a filter was already applied, and we cannot get the consumer scaling using *width / *height
+    bool qtblendRescaled = mlt_properties_get_int(frame_properties, "_qtblend_scaled") == 1;
     if (mlt_properties_get(properties, "rect")) {
         rect = mlt_properties_anim_get_rect(properties, "rect", position, length);
         if (::strchr(mlt_properties_get(properties, "rect"), '%')) {
@@ -102,16 +92,58 @@ static int filter_get_image(mlt_frame frame,
             rect.w *= normalized_width;
             rect.h *= normalized_height;
         }
-
-        double scale = mlt_profile_scale_width(profile, *width);
-        if (scale != 1.0) {
-            rect.x *= scale;
-            rect.w *= scale;
-        }
-        scale = mlt_profile_scale_height(profile, *height);
-        if (scale != 1.0) {
-            rect.y *= scale;
-            rect.h *= scale;
+        if (qtblendRescaled) {
+            // Another qtblend filter was already applied
+            // We requested a image with full media resolution, adjust rect to profile
+            // Check if we have consumer scaling enabled
+            double consumerScale = mlt_properties_get_double(frame_properties, "_qtblend_scalex");
+            if (consumerScale > 0.) {
+                b_width *= consumerScale;
+                b_height *= consumerScale;
+            }
+            // Always request an image that follows the consumer aspect ratio
+            if (geometry_dar < b_dar) {
+                *width = qMin(b_width, MLT_QTBLEND_MAX_DIMENSION);
+                *height = *width * consumer_ar * normalized_height / normalized_width;
+            } else {
+                *height = qMin(b_height, MLT_QTBLEND_MAX_DIMENSION);
+                *width = *height * normalized_width / normalized_height / consumer_ar;
+            }
+            // Adjust rect to new scaling
+            double scale = (double) *width / normalized_width;
+            if (scale != 1.0) {
+                rect.x *= scale;
+                rect.w *= scale;
+            }
+            scale = (double) *height / normalized_height;
+            if (scale != 1.0) {
+                rect.y *= scale;
+                rect.h *= scale;
+            }
+        } else {
+            // First instance of a qtblend filter
+            mlt_properties_set_int(frame_properties, "_qtblend_scaled", 1);
+            double scale = mlt_profile_scale_width(profile, *width);
+            mlt_properties_set_double(frame_properties, "_qtblend_scalex", scale);
+            if (scale != 1.0) {
+                rect.x *= scale;
+                rect.w *= scale;
+                if (distort) {
+                    b_width *= scale;
+                } else {
+                    // Apply consumer scaling to the source image request
+                    b_width *= scale;
+                    b_height *= scale;
+                }
+            }
+            scale = mlt_profile_scale_height(profile, *height);
+            if (scale != 1.0) {
+                rect.y *= scale;
+                rect.h *= scale;
+                if (distort) {
+                    b_height *= scale;
+                }
+            }
         }
         transform.translate(rect.x, rect.y);
         opacity = rect.o;
@@ -172,8 +204,8 @@ static int filter_get_image(mlt_frame frame,
     if (distort) {
         transform.scale(rect.w / b_width, rect.h / b_height);
     } else {
+        double scale = 1;
         double resize_dar = rect.w * consumer_ar / rect.h;
-        double scale;
         if (b_dar > resize_dar) {
             scale = rect.w / b_width;
             if (b_dar < geometry_dar) {
@@ -185,7 +217,6 @@ static int filter_get_image(mlt_frame frame,
                 scale *= transformScale;
             }
         }
-
         // Center image in rect
         transform.translate((rect.w - (b_width * scale)) / 2.0, (rect.h - (b_height * scale)) / 2.0);
         transform.scale(scale, scale);
