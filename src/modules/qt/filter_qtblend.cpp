@@ -79,8 +79,6 @@ static int filter_get_image(mlt_frame frame,
     double b_ar = mlt_frame_get_aspect_ratio(frame);
     double b_dar = b_ar * b_width / b_height;
     double opacity = 1.0;
-    double transformScale = 1.;
-    double geometry_dar = normalized_width * consumer_ar / normalized_height;
 
     // If the _qtblend_scaled property is true, a filter was already applied, and we cannot get the consumer scaling using *width / *height
     bool qtblendRescaled = mlt_properties_get_int(frame_properties, "_qtblend_scaled") == 1;
@@ -102,7 +100,8 @@ static int filter_get_image(mlt_frame frame,
                 b_height *= consumerScale;
             }
             // Always request an image that follows the consumer aspect ratio
-            if (geometry_dar < b_dar) {
+            double consumer_dar = normalized_width * consumer_ar / normalized_height;
+            if (consumer_dar < b_dar) {
                 *width = qMin(b_width, MLT_QTBLEND_MAX_DIMENSION);
                 *height = *width * consumer_ar * normalized_height / normalized_width;
             } else {
@@ -122,8 +121,9 @@ static int filter_get_image(mlt_frame frame,
             }
         } else {
             // First instance of a qtblend filter
-            mlt_properties_set_int(frame_properties, "_qtblend_scaled", 1);
             double scale = mlt_profile_scale_width(profile, *width);
+            // Store consumer scaling for further uses
+            mlt_properties_set_int(frame_properties, "_qtblend_scaled", 1);
             mlt_properties_set_double(frame_properties, "_qtblend_scalex", scale);
             if (scale != 1.0) {
                 rect.x *= scale;
@@ -206,16 +206,10 @@ static int filter_get_image(mlt_frame frame,
     } else {
         double scale = 1;
         double resize_dar = rect.w * consumer_ar / rect.h;
-        if (b_dar > resize_dar) {
+        if (b_dar >= resize_dar) {
             scale = rect.w / b_width;
-            if (b_dar < geometry_dar) {
-                scale *= transformScale;
-            }
         } else {
             scale = rect.h / b_height * b_ar;
-            if (b_dar > geometry_dar) {
-                scale *= transformScale;
-            }
         }
         // Center image in rect
         transform.translate((rect.w - (b_width * scale)) / 2.0, (rect.h - (b_height * scale)) / 2.0);
