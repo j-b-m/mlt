@@ -223,7 +223,6 @@ static int get_image(mlt_frame a_frame,
         *format = mlt_image_rgba;
         error = mlt_frame_get_image(b_frame, &b_image, format, &b_width, &b_height, 0);
     }
-    fprintf(stderr, "GOT RESULTING B_FRAME SIZE: %dx%d\n_____________\n", b_width, b_height);
     b_dar = b_ar * b_width / b_height;
     if (b_frame->convert_image
         && (*format != mlt_image_rgba || b_width != request_width || b_height != request_height)) {
