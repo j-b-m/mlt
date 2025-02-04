@@ -141,6 +141,10 @@ extern mlt_link link_timeremap_init(mlt_profile profile,
                                     mlt_service_type type,
                                     const char *id,
                                     char *arg);
+extern mlt_link link_freeze_init(mlt_profile profile,
+                                    mlt_service_type type,
+                                    const char *id,
+                                    char *arg);
 extern mlt_producer producer_blank_init(mlt_profile profile,
                                         mlt_service_type type,
                                         const char *id,
@@ -243,6 +247,7 @@ MLT_REPOSITORY
     MLT_REGISTER(mlt_service_link_type, "rescale", mlt_link_filter_init);
     MLT_REGISTER(mlt_service_link_type, "resize", mlt_link_filter_init);
     MLT_REGISTER(mlt_service_link_type, "timeremap", link_timeremap_init);
+    MLT_REGISTER(mlt_service_link_type, "freeze", link_freeze_init);
     MLT_REGISTER(mlt_service_producer_type, "abnormal", producer_loader_init);
     MLT_REGISTER(mlt_service_producer_type, "blank", producer_blank_init);
     MLT_REGISTER(mlt_service_producer_type, "color", producer_colour_init);
