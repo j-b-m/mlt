@@ -10,7 +10,7 @@ tags:
   - Video
 description: Freeze on a frame.
 parameters:
-  - identifier: freeze_position
+  - identifier: frame
     title: Freeze Position
     type: time
     description: The time of the frame to freeze

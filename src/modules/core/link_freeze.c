@@ -43,10 +43,10 @@ static void property_changed(mlt_service owner, mlt_link self, mlt_event_data ev
     if (!name)
         return;
 
-    if (strcmp("freeze_position", name) == 0) {
+    if (strcmp("frame", name) == 0) {
         // Freeze position changed
         private_data *pdata = (private_data *) self->child;
-        pdata->freeze_position = mlt_properties_get_position(MLT_LINK_PROPERTIES(self), "freeze_position");
+        pdata->freeze_position = mlt_properties_get_position(MLT_LINK_PROPERTIES(self), "frame");
         pdata->freeze_frame = NULL;
     } else if (strcmp("freeze_before", name) == 0) {
         // Param change
@@ -72,10 +72,9 @@ static int link_get_image(mlt_frame frame,
     if (!unique_properties) {
         return 1;
     }
+    mlt_position frame_pos = mlt_properties_get_position(unique_properties, "play_position");
 
-    mlt_position frame_pos = mlt_frame_get_position(frame);
     private_data *pdata = (private_data *) self->child;
-
     if (pdata->freeze_frame == NULL) {
         mlt_producer_seek(self->next, pdata->freeze_position);
         int result = mlt_service_get_frame(MLT_PRODUCER_SERVICE(self->next), &pdata->freeze_frame, 0);
@@ -130,9 +129,12 @@ static int link_get_frame(mlt_link self, mlt_frame_ptr frame, int index)
     error = mlt_service_get_frame(MLT_PRODUCER_SERVICE(self->next), frame, index);
     mlt_producer original_producer = mlt_frame_get_original_producer(*frame);
 
-        // Pass original producer dimensions with the frame
-        mlt_properties unique_properties = mlt_frame_unique_properties(*frame, MLT_LINK_SERVICE(self));
+    // Pass original producer dimensions with the frame
+    mlt_properties unique_properties = mlt_frame_unique_properties(*frame, MLT_LINK_SERVICE(self));
     mlt_properties original_producer_properties = MLT_PRODUCER_PROPERTIES(original_producer);
+
+    // Store the real frame position to compare when freeze_after / before is enabled
+    mlt_properties_set_position(unique_properties, "play_position", frame_pos);
     if (mlt_properties_exists(original_producer_properties, "width")) {
         mlt_properties_set_int(unique_properties,
                                "width",
@@ -193,7 +195,7 @@ mlt_link link_freeze_init(mlt_profile profile, mlt_service_type type, const char
         self->close = link_close;
 
         mlt_properties properties = MLT_LINK_PROPERTIES(self);
-        mlt_properties_set_int(properties, "freeze_position", 0);
+        mlt_properties_set_int(properties, "frame", 0);
         mlt_properties_set_int(properties, "freeze_before", 0);
         mlt_properties_set_int(properties, "freeze_after", 0);
 
