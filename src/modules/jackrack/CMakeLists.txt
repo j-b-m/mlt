@@ -44,7 +44,7 @@ if(GPL AND TARGET PkgConfig::xml AND TARGET PkgConfig::glib AND ladspa_h_FOUND)
     target_compile_definitions(mltjackrack PRIVATE RELOCATABLE)
   endif()
 
-  install(FILES filter_jack.yml filter_ladspa.yml producer_ladspa.yml DESTINATION ${MLT_INSTALL_DATA_DIR}/jackrack)
+  install(FILES filter_jack.yml filter_ladspa.yml producer_ladspa.yml blacklist.txt DESTINATION ${MLT_INSTALL_DATA_DIR}/jackrack)
 
   if(TARGET JACK::JACK)
     target_sources(mltjackrack PRIVATE filter_jackrack.c)
@@ -60,7 +60,7 @@ if(GPL AND TARGET PkgConfig::xml AND TARGET PkgConfig::glib AND ladspa_h_FOUND)
       lv2_process.c lv2_process.h
       lv2_plugin_settings.c lv2_plugin_settings.h
       lv2_urid_helper.h)
-    install(FILES filter_lv2.yml producer_lv2.yml DESTINATION ${MLT_INSTALL_DATA_DIR}/jackrack)
+    install(FILES filter_lv2.yml producer_lv2.yml lv2blacklist.txt DESTINATION ${MLT_INSTALL_DATA_DIR}/jackrack)
   endif()
 
   if(USE_VST2)
