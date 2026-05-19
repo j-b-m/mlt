@@ -1798,8 +1798,8 @@ static void find_first_pts(producer_avformat self, int video_index)
             if (!self->probe_done && pkt.side_data_elems > 0) {
                 size_t side_data_size = 0;
                 uint8_t *side_data = av_packet_get_side_data(&pkt,
-                                                         AV_PKT_DATA_NEW_EXTRADATA,
-                                                         &side_data_size);
+                                                             AV_PKT_DATA_NEW_EXTRADATA,
+                                                             &side_data_size);
                 if ((pkt.flags & AV_PKT_FLAG_KEY) && !side_data) {
                     self->decode_warning = 1;
                 }
@@ -2723,8 +2723,8 @@ static void *packets_worker(void *param)
                     if (!self->probe_done && pkt->side_data_elems > 0) {
                         size_t side_data_size = 0;
                         uint8_t *side_data = av_packet_get_side_data(pkt,
-                                                                 AV_PKT_DATA_NEW_EXTRADATA,
-                                                                 &side_data_size);
+                                                                     AV_PKT_DATA_NEW_EXTRADATA,
+                                                                     &side_data_size);
                         if ((pkt->flags & AV_PKT_FLAG_KEY) && !side_data) {
                             self->decode_warning = 1;
                         }
