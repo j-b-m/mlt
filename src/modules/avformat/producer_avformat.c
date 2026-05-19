@@ -1796,10 +1796,7 @@ static void find_first_pts(producer_avformat self, int video_index)
         ret = av_read_frame(context, &pkt);
         if (ret >= 0 && pkt.stream_index == video_index) {
             if (!self->probe_done && pkt.side_data_elems > 0) {
-                size_t side_data_size = 0;
-                uint8_t *side_data = av_packet_get_side_data(&pkt,
-                                                             AV_PKT_DATA_NEW_EXTRADATA,
-                                                             &side_data_size);
+                uint8_t *side_data = av_packet_get_side_data(&pkt, AV_PKT_DATA_NEW_EXTRADATA, NULL);
                 if ((pkt.flags & AV_PKT_FLAG_KEY) && !side_data) {
                     self->decode_warning = 1;
                 }
@@ -2721,10 +2718,9 @@ static void *packets_worker(void *param)
             if (ret == 0) {
                 if (pkt->stream_index == self->video_index) {
                     if (!self->probe_done && pkt->side_data_elems > 0) {
-                        size_t side_data_size = 0;
                         uint8_t *side_data = av_packet_get_side_data(pkt,
                                                                      AV_PKT_DATA_NEW_EXTRADATA,
-                                                                     &side_data_size);
+                                                                     NULL);
                         if ((pkt->flags & AV_PKT_FLAG_KEY) && !side_data) {
                             self->decode_warning = 1;
                         }
@@ -3308,7 +3304,7 @@ exit_get_image:
     mlt_properties_set_int(properties, "meta.media.progressive", self->progressive);
     mlt_properties_set_int(properties, "_probe_complete", 1);
     if (!self->probe_done) {
-        if (self->decode_warning) {
+        if (self->decode_warning && codec_params->codec_id == AV_CODEC_ID_H264) {
             mlt_properties_set_int(properties, "meta.media.decode_error", 1);
         }
         self->probe_done = 1;
