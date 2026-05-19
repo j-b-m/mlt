@@ -91,6 +91,8 @@ struct producer_avformat_s
     int audio_index;
     int video_index;
     int64_t first_pts;
+    int probe_done;
+    int decode_warning;
     atomic_int_fast64_t last_position;
     int video_seekable;
     int seekable; /// This one is used for both audio and file level seekability.
@@ -238,6 +240,7 @@ mlt_producer producer_avformat_init(mlt_profile profile, const char *service, ch
             // Force the duration to be computed unless explicitly provided.
             mlt_properties_set_position(properties, "length", 0);
             mlt_properties_set_position(properties, "out", 0);
+            self->decode_warning = 0;
 
             if (strcmp(service, "avformat-novalidate")) {
                 // Open the file
@@ -1514,6 +1517,7 @@ static int producer_open(
     const AVInputFormat *format = NULL;
     AVDictionary *params = NULL;
     char *filename = parse_url(profile, URL, &format, &params);
+    self->probe_done = 0;
 
     // Now attempt to open the file or device with filename
     error = avformat_open_input(&self->video_format, filename, format, &params) < 0;
@@ -1791,6 +1795,16 @@ static void find_first_pts(producer_avformat self, int video_index)
                || (vfr_counter < VFR_THRESHOLD && vfr_countdown > 0))) {
         ret = av_read_frame(context, &pkt);
         if (ret >= 0 && pkt.stream_index == video_index) {
+            if (!self->probe_done && pkt.side_data_elems > 0) {
+                size_t side_data_size = 0;
+                uint8_t *side_data = av_packet_get_side_data(&pkt,
+                                                         AV_PKT_DATA_NEW_EXTRADATA,
+                                                         &side_data_size);
+                if ((pkt.flags & AV_PKT_FLAG_KEY) && !side_data) {
+                    self->decode_warning = 1;
+                }
+            }
+
             // Variable frame rate check
             if (pkt.duration != AV_NOPTS_VALUE && pkt.duration != prev_pkt_duration) {
                 mlt_log_verbose(MLT_PRODUCER_SERVICE(self->parent),
@@ -2706,6 +2720,15 @@ static void *packets_worker(void *param)
 
             if (ret == 0) {
                 if (pkt->stream_index == self->video_index) {
+                    if (!self->probe_done && pkt->side_data_elems > 0) {
+                        size_t side_data_size = 0;
+                        uint8_t *side_data = av_packet_get_side_data(pkt,
+                                                                 AV_PKT_DATA_NEW_EXTRADATA,
+                                                                 &side_data_size);
+                        if ((pkt->flags & AV_PKT_FLAG_KEY) && !side_data) {
+                            self->decode_warning = 1;
+                        }
+                    }
                     mlt_deque_push_back(self->vpackets, av_packet_clone(pkt));
                 } else if (!self->video_seekable && pkt->stream_index == self->audio_index
                            && !is_album_art(self)) {
@@ -3284,6 +3307,13 @@ exit_get_image:
     mlt_properties_set_int(properties, "meta.media.top_field_first", self->top_field_first);
     mlt_properties_set_int(properties, "meta.media.progressive", self->progressive);
     mlt_properties_set_int(properties, "_probe_complete", 1);
+    if (!self->probe_done) {
+        if (self->decode_warning) {
+            mlt_properties_set_int(properties, "meta.media.decode_error", 1);
+        }
+        self->probe_done = 1;
+    }
+
     mlt_service_unlock(MLT_PRODUCER_SERVICE(producer));
 
     mlt_log_timings_end(NULL, __FUNCTION__);
@@ -4518,6 +4548,7 @@ static int producer_get_frame(mlt_producer producer, mlt_frame_ptr frame, int in
         mlt_properties_clear(MLT_PRODUCER_PROPERTIES(producer), "height");
         mlt_properties_clear(MLT_PRODUCER_PROPERTIES(producer), "format");
         mlt_properties_set_int(MLT_PRODUCER_PROPERTIES(producer), "_probe_complete", 1);
+        self->probe_done = 1;
     }
 
     // Calculate the next timecode
