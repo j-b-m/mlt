@@ -114,7 +114,7 @@ static void blend_case7(
     int w8 = width / 8;
     __asm__ volatile(LOAD_CONSTS LOAD_WEIGHT
                      "loop_start7:                           \n\t" LOAD_SRC_A SRC_A_PREMUL
-                         DST_A_CALC DST_PIX_CALC "add            $0x08, %[src_a]         \n\t"
+                         /*DST_A_CALC*/ DST_PIX_CALC "add            $0x08, %[src_a]         \n\t"
                      "add            $0x08, %[dest_a]        \n\t" PIX_POINTER_INC
                      "jnz            loop_start7             \n\t"
                      : [weight] "+r"(weight),
