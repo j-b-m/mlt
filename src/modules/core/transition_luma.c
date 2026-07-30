@@ -284,8 +284,7 @@ static inline int dissolve_rgba64(
                                              .src_image = simg.data,
                                              .width = dimg.width,
                                              .height = dimg.height,
-                                             .weight = weight
-    };
+                                             .weight = weight};
     mlt_slices_run_normal(threads, dissolve_slice_rgba64, &context);
 
     return 0;
